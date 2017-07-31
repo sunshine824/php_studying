@@ -175,4 +175,41 @@ function trans_byte($byte, $precision = 2)
         return round($byte / $tb, $precision) . 'TB';
     }
 }
+
 //var_dump(trans_byte(12345678));
+
+/**
+ * 读取文件内容，返回字符串
+ * @param string $filename 文件名
+ * @return bool|string
+ */
+function read_file($filename)
+{
+    //检测是否是一个文件并文件已存在
+    if (is_file($filename) && is_readable($filename)) {
+        return file_get_contents($filename);
+    }
+    return false;
+}
+
+//var_dump(read_file('../fileSystem/1.txt'));
+
+/**
+ * 读取文件中的内容到数组中
+ * @param string $filename
+ * @param bool $skip_empty_lines
+ * @return array|bool
+ */
+function read_file_array($filename, $skip_empty_lines = false)
+{
+    if (is_file($filename) && is_readable($filename)) {
+        if ($skip_empty_lines) {
+            return file($filename,FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        } else {
+            return file($filename);
+        }
+    }
+    return false;
+}
+
+var_dump(read_file_array('../fileSystem/1.txt',true));
