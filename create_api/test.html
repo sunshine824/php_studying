@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<button class="btn">提交AJAX</button>
+
+<script src="jquery-3.1.1.min.js"></script>
+<script>
+    $('.btn').click(()=>{
+        $.ajax({
+            type:'post',
+            url:'http://localhost/php_learn/create_api/get_ajaxInfo.php',
+            data:{
+                username:'张三',
+                password:'123456789'
+            },
+            async:false,
+            dataType:"json",
+            success(data){
+                console.log(data)
+            }
+        })
+    })
+</script>
+</body>
+</html>
