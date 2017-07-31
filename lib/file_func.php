@@ -204,7 +204,7 @@ function read_file_array($filename, $skip_empty_lines = false)
 {
     if (is_file($filename) && is_readable($filename)) {
         if ($skip_empty_lines) {
-            return file($filename,FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            return file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         } else {
             return file($filename);
         }
@@ -212,4 +212,44 @@ function read_file_array($filename, $skip_empty_lines = false)
     return false;
 }
 
-var_dump(read_file_array('../fileSystem/1.txt',true));
+//var_dump(read_file_array('../fileSystem/1.txt',true));
+
+
+/**
+ * 向文件中写入内容
+ * @param string $filename   文件名
+ * @param mixed $data        写入内容（数组和对象需要处理）
+ * @param bool $clearFlag    是否覆盖原有内容 true:不覆盖  false:覆盖
+ * @return bool
+ */
+function write_file($filename, $data, $clearFlag = false)
+{
+    $dirname = dirname($filename);
+    if (!file_exists($filename)) {
+        mkdir($dirname, 0777, true);
+    }
+    //检测文件是否存在并且可读
+    if (is_file($filename) && is_readable($filename)) {
+        //读取文件内容，之后和新写入的内容拼接在一起
+        if (filesize($filename) > 0) {
+            $srcData=file_get_contents($filename);
+        }
+    }
+    //不需要覆盖
+    if(!$clearFlag){
+        $data=$srcData.$data;
+    }
+    //判断内容是否是数组或对象
+    if (is_array($data) || is_object($data)) {
+        //序列化数据
+        $data = serialize($data);
+    }
+    //向文件中写入内容
+    if (file_put_contents($filename, $data) !== false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+var_dump(write_file('../fileSystem/1.txt', ['a','b','c'],true));
