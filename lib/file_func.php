@@ -219,7 +219,7 @@ function read_file_array($filename, $skip_empty_lines = false)
  * 向文件中写入内容
  * @param string $filename   文件名
  * @param mixed $data        写入内容（数组和对象需要处理）
- * @param bool $clearFlag    是否覆盖原有内容 true:不覆盖  false:覆盖
+ * @param bool $clearFlag    是否覆盖原有内容 true:覆盖  false:不覆盖
  * @return bool
  */
 function write_file($filename, $data, $clearFlag = false)
