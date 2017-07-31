@@ -127,5 +127,52 @@ function cut_file($filename, $dest)
     }
     return false;
 }
+
 //var_dump(cut_file('11.txt','../create_api'));
 
+/**
+ * 返回文件信息
+ * @param $filename string 文件名
+ * @return array|bool
+ */
+function get_file_info($filename)
+{
+    if (!is_file($filename) || !is_readable($filename)) {
+        return false;
+    }
+    return [
+        'atime' => date('Y-m-d H:i:s', fileatime($filename)), //最后访问时间
+        'mtime' => date('Y-m-d H:i:s', filemtime($filename)), //修改时间
+        'ctime' => date('Y-m-d H:i:s', filectime($filename)), //文件创建时间
+        'size' => trans_byte(filesize($filename)),                              //文件大小(字节)
+        'type' => filetype($filename)                               //文件类型
+    ];
+}
+
+var_dump(get_file_info('../fileSystem/1.txt'));
+
+/**
+ * 字节单位转换的函数
+ * @param int $byte 字节大小
+ * @param int $precision 保留位数
+ * @return string
+ */
+function trans_byte($byte, $precision = 2)
+{
+    $kb = 1024;
+    $mb = 1024 * $kb;
+    $gb = 1024 * $mb;
+    $tb = 1024 * $gb;
+    if ($byte < $kb) {
+        return $byte . 'B';
+    } elseif ($byte < $mb) {
+        return round($byte / $kb, $precision) . 'KB';
+    } elseif ($byte < $gb) {
+        return round($byte / $mb, $precision) . 'MB';
+    } elseif ($byte < $tb) {
+        return round($byte / $gb, $precision) . 'GB';
+    } else {
+        return round($byte / $tb, $precision) . 'TB';
+    }
+}
+//var_dump(trans_byte(12345678));
