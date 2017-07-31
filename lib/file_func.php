@@ -149,7 +149,7 @@ function get_file_info($filename)
     ];
 }
 
-var_dump(get_file_info('../fileSystem/1.txt'));
+//var_dump(get_file_info('../fileSystem/1.txt'));
 
 /**
  * 字节单位转换的函数
