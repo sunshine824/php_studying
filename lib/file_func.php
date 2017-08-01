@@ -273,6 +273,163 @@ function truncate_file($filename,$length){
 }
 //var_dump(truncate_file('./1.txt',2));
 
+/**
+ * 文件下载
+ * @param string $filename     文件名
+ * @param array $allowDownExt  允许文件下载类型
+ * @return bool
+ */
+function down_file($filename,$allowDownExt=['jpg','jpeg','gif','txt','html','png','rar','zip']){
+    //检测下载文件是否存在，并且可读
+    if(!is_file($filename) || !is_readable($filename)){
+        return false;
+    }
+    //检测文件类型是否允许下载
+    $ext=strtolower(pathinfo($filename,PATHINFO_EXTENSION));
+    if(!in_array($ext,$allowDownExt)){
+        return false;
+    }
+    //通过header()发送头信息
+    //告诉浏览器输出的是字节流
+    header('content-type:application.octet-stream');
+
+    //告诉浏览器返回的文件大小是按照字节大小进行计算的
+    header('Accept-Ranges:bytes');
+
+    //告诉浏览器返回的文件大小
+    header('Accpet-Length:'.filesize($filename));
+
+    //告诉浏览器文件作为附件处理，告诉浏览器最终下载完成的文件名称
+    header('Content-Disposition:attachment;filename=cx_'.basename($filename));
+
+    //读取文件中内容
+    readfile($filename);
+
+    exit;
+}
+
+/**
+ * 文件切片下载
+ * @param string $filename     文件名
+ * @param array $allowDownExt  允许文件下载类型
+ * @return bool
+ */
+function down_file1($filename,$allowDownExt=['jpg','jpeg','gif','txt','html','png','rar','zip']){
+    //检测下载文件是否存在，并且可读
+    if(!is_file($filename) || !is_readable($filename)){
+        return false;
+    }
+    //检测文件类型是否允许下载
+    $ext=strtolower(pathinfo($filename,PATHINFO_EXTENSION));
+    if(!in_array($ext,$allowDownExt)){
+        return false;
+    }
+    //通过header()发送头信息
+    //告诉浏览器输出的是字节流
+    header('content-type:application.octet-stream');
+
+    //告诉浏览器返回的文件大小是按照字节大小进行计算的
+    header('Accept-Ranges:bytes');
+
+    $filesize=filesize($filename);
+    //告诉浏览器返回的文件大小
+    header('Accpet-Length:'.$filesize);
+
+    //告诉浏览器文件作为附件处理，告诉浏览器最终下载完成的文件名称
+    header('Content-Disposition:attachment;filename=cx_'.basename($filename));
+
+    //规定每个读取文件的字节数为1024字节，直接输出数据
+    $read_buffer=1024;
+    $sum_buffer=0;
+    $handle=fopen($filename,'rb');
+    while (!feof($handle) && $sum_buffer<$filesize){
+        echo fread($handle,$read_buffer);
+        $sum_buffer+=$read_buffer;
+    }
+    fclose($handle);
+    exit;
+}
+
+/**
+ * 单文件上传
+ * @param array $fileInfo      上传文件信息
+ * @param string $uploadPath   文件上传默认路径
+ * @param bool $imageFlag      是否检测真实图片
+ * @param array $allowExt      允许上传文件类型
+ * @param int $maxSize         文件上传最大值
+ * @return mixed|string
+ */
+function upload_file($fileInfo,$uploadPath='./uploads',$imageFlag=true,$allowExt=['jpeg','jpg','png','gif'],$maxSize=2097152){
+    $UPLOAD_ERRS =[
+        'upload_max_filesize'=>'超过了PHP配置文件中upload_max_filesize选项值',
+        'form_max_size'=>'超过了表单MAX_FILE_SIZE选项值',
+        'upload_file_partial'=>'文件部分被上传',
+        'no_upload_file_select'=>'没有选择上传文件',
+        'upload_system_error'=>'系统错误',
+        'no_allow_ext'=>'非法文件类型',
+        'exceed_max_size'=>'超出上传最大值',
+        'no_true_image'=>'文件不是真实图片',
+        'not_http_post'=>'文件不是通过HTTP POST方式上传上来的',
+        'move_error'=>'文件移动失败'
+    ];
+
+    //检测是否上传有错误
+    if($fileInfo['error']===UPLOAD_ERR_OK){
+        //检测文件类型
+        $ext=strtolower(pathinfo($fileInfo['name'],PATHINFO_EXTENSION));
+        if(!in_array($ext,$allowExt)){
+            return $UPLOAD_ERRS['no_allow_ext'];
+        }
+        //检测上传文件大小是否符合规范
+        if($fileInfo['size']>$maxSize){
+            return $UPLOAD_ERRS['exceed_max_size'];
+        }
+        //检测是否是真是图片
+        if($imageFlag){
+            if(@!getimagesize($fileInfo['tmp_name'])){
+                return $UPLOAD_ERRS['no_true_image'];
+            }
+        }
+        //检测文件是否通过HTTP POST方式上传上来的
+        if(!is_uploaded_file($fileInfo['tmp_name'])){
+            return $UPLOAD_ERRS['not_http_post'];
+        }
+        //检测目标目录是否存在，不存在则创建
+        if(!is_dir($uploadPath)){
+            mkdir($uploadPath,0777,true);
+        }
+        //生成唯一文件名，防止重名产生覆盖
+        $uniName=md5(uniqid(microtime(true),true)).'.'.$ext;
+        $dest=$uploadPath.DIRECTORY_SEPARATOR.$uniName;
+
+        //移动文件
+        if(@!move_uploaded_file($fileInfo['tmp_name'],$dest)){
+            return $UPLOAD_ERRS['move_error'];
+        }
+        return $dest;
+    }else{
+        switch($fileInfo['error']){
+            case 1:
+                $mes=$UPLOAD_ERRS['upload_max_filesize'];
+                break;
+            case 2:
+                $mes=$UPLOAD_ERRS['form_max_size'];
+                break;
+            case 3:
+                $mes=$UPLOAD_ERRS['upload_file_partial'];
+                break;
+            case 4:
+                $mes=$UPLOAD_ERRS['no_upload_file_select'];
+                break;
+            case 5:
+            case 6:
+            case 7:
+                $mes=$UPLOAD_ERRS['upload_system_error'];
+                break;
+        }
+        return $mes;
+    }
+}
 
 
 
