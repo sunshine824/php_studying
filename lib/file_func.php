@@ -472,9 +472,34 @@ function zip_files($zipName,...$files){
     }
     $zip=new ZipArchive();
     if($zip->open($zipName,ZipArchive::CREATE|ZipArchive::OVERWRITE)){
-        foreach ($files as $file){
-            if(is_file($file)){
-                $zip->addFile($file);
+        if(is_dir($files[0])){
+            //判断是否是压缩文件夹
+            if($dh=opendir($files[0])){
+                while (($file = readdir($dh)) !== false){
+                    if(is_file($file)){
+                        $zip->addFile($file);
+                    }elseif (is_dir($file)){
+                        if($file!=='.' && $file!=='..'){
+                            if($dh1=opendir($file)){
+                                while (($file=readdir($dh1))!==false){
+                                    if(is_file($file)){
+                                        var_dump($file);
+                                        $zip->addFile($file);
+                                    }else{
+                                        var_dump($file);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                closedir($dh);
+            }
+        }else{
+            foreach ($files as $file){
+                if(is_file($file)){
+                    $zip->addFile($file);
+                }
             }
         }
         $zip->close();
@@ -484,7 +509,7 @@ function zip_files($zipName,...$files){
     }
 }
 
-//var_dump(zip_files('test1.zip','upload/doUpload.php','upload/upload.html'));
+var_dump(zip_files('test1.zip','../lib'));
 
 
 /**
