@@ -252,4 +252,46 @@ function write_file($filename, $data, $clearFlag = false)
     }
 }
 
-var_dump(write_file('../fileSystem/1.txt', ['a','b','c'],true));
+//var_dump(write_file('../fileSystem/1.txt', ['a','b','c'],true));
+
+/**
+ * 截断文件到指定大小
+ * @param string $filename   文件名
+ * @param int $length        截断长度
+ * @return bool
+ */
+function truncate_file($filename,$length){
+    //检测是否是文件
+    if(is_file($filename) && is_writeable($filename)){
+        $handle=fopen($filename,'r+');
+        $length=$length<0?0:$length;
+        ftruncate($handle,$length);
+        fclose($handle);
+        return true;
+    }
+    return false;
+}
+//var_dump(truncate_file('./1.txt',2));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
